@@ -13,13 +13,24 @@ const addToCart = async (req, res) => {
     }
 
     const product = await Product.findById(productId);
-
     if (!product) {
       return res.status(404).json({
         success: false,
         message: "Product not found",
       });
     }
+
+    // Check if the requested quantity exceeds available stock
+    if (product.totalStock < quantity) {
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient stock!",
+      });
+    }
+
+    // Deduct the stock from the product
+    product.totalStock -= quantity;
+    await product.save();
 
     let cart = await Cart.findOne({ userId });
 
@@ -46,7 +57,7 @@ const addToCart = async (req, res) => {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: "Error",
+      message: "Internal server error",
     });
   }
 };

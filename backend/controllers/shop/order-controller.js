@@ -2,13 +2,14 @@ const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
 
+// Create a new order
 const createOrder = async (req, res) => {
   try {
     const {
       userId,
       cartItems,
       addressInfo,
-      orderStatus = "pending", 
+      orderStatus = "pending",
       paymentMethod = "COD",
       paymentStatus = "pending",
       totalAmount,
@@ -25,7 +26,7 @@ const createOrder = async (req, res) => {
       paymentMethod,
       paymentStatus,
       totalAmount,
-      orderDate: Date.now(), // Ensure orderDate is set properly
+      orderDate: Date.now(), // Set order date
       orderUpdateDate: Date.now(), // Set initial update date
     });
 
@@ -50,6 +51,7 @@ const createOrder = async (req, res) => {
   }
 };
 
+// Capture payment and confirm order
 const capturePayment = async (req, res) => {
   try {
     const { orderId } = req.body;
@@ -59,33 +61,9 @@ const capturePayment = async (req, res) => {
       return res.status(404).json({ success: false, message: "Order not found!" });
     }
 
-    // Fetch all product IDs in a single query
-    const productIds = order.cartItems.map(item => item.productId);
-    const products = await Product.find({ _id: { $in: productIds } });
-
-    // Check stock availability
-    const insufficientStock = order.cartItems.some(item => {
-      const product = products.find(p => p._id.toString() === item.productId.toString());
-      return !product || product.totalStock < item.quantity;
-    });
-
-    if (insufficientStock) {
-      return res.status(400).json({ success: false, message: "Not enough stock!" });
-    }
-
-    // Deduct stock using `bulkWrite`
-    const bulkOps = order.cartItems.map(item => ({
-      updateOne: {
-        filter: { _id: item.productId },
-        update: { $inc: { totalStock: -item.quantity } },
-      },
-    }));
-    await Product.bulkWrite(bulkOps);
-
-    // Update order & delete cart
+    // Update payment status and order status
     order.paymentStatus = "paid";
     order.orderStatus = "confirmed";
-    await Cart.findByIdAndDelete(order.cartId);
     await order.save();
 
     res.status(200).json({ success: true, message: "Order confirmed", data: order });
@@ -95,8 +73,7 @@ const capturePayment = async (req, res) => {
   }
 };
 
-
-
+// Get all orders by user
 const getAllOrdersByUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -116,7 +93,7 @@ const getAllOrdersByUser = async (req, res) => {
   }
 };
 
-
+// Get order details by order ID
 const getOrderDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -143,6 +120,7 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
+// Cancel an order
 const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -176,6 +154,53 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+// Update order status (e.g., mark as delivered)
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+
+    let order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found!" });
+    }
+
+    // Check if the status is being updated to "delivered"
+    if (status === "delivered" && order.orderStatus !== "delivered") {
+      // Fetch all product IDs in a single query
+      const productIds = order.cartItems.map(item => item.productId);
+      const products = await Product.find({ _id: { $in: productIds } });
+
+      // Check stock availability
+      const insufficientStock = order.cartItems.some(item => {
+        const product = products.find(p => p._id.toString() === item.productId.toString());
+        return !product || product.totalStock < item.quantity;
+      });
+
+      if (insufficientStock) {
+        return res.status(400).json({ success: false, message: "Not enough stock to deliver the order!" });
+      }
+
+      // Deduct stock using `bulkWrite`
+      const bulkOps = order.cartItems.map(item => ({
+        updateOne: {
+          filter: { _id: item.productId },
+          update: { $inc: { totalStock: -item.quantity } },
+        },
+      }));
+      await Product.bulkWrite(bulkOps);
+    }
+
+    // Update the order status
+    order.orderStatus = status;
+    order.orderUpdateDate = Date.now(); // Update the last modified date
+    await order.save();
+
+    res.status(200).json({ success: true, message: `Order status updated to ${status}`, data: order });
+  } catch (e) {
+    console.error("Error in updateOrderStatus:", e);
+    res.status(500).json({ success: false, message: "Some error occurred!", error: e.message });
+  }
+};
 
 module.exports = {
   createOrder,
@@ -183,4 +208,5 @@ module.exports = {
   getAllOrdersByUser,
   getOrderDetails,
   cancelOrder,
+  updateOrderStatus,
 };
