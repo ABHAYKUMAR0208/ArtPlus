@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000/api/admin/sales";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/admin/sales`;
 
 // Function to get sales statistics
 export const getSalesStats = async () => {

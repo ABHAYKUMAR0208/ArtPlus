@@ -23,7 +23,7 @@ const emailRouter = require("./routes/common/email-routes");
 
 // Database connection
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected..."))
   .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -33,7 +33,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_BASE_URL,
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: [
       "Content-Type",

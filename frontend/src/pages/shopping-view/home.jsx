@@ -78,7 +78,7 @@ function ShoppingHome() {
   // Filter products added in the last week
   const getLastWeekProducts = () => {
     const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 15);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 30);
     return productList.filter((product) => {
       const productDate = new Date(product.createdAt);
       return productDate >= oneWeekAgo;

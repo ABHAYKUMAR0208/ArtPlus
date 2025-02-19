@@ -28,7 +28,7 @@ const ContactUs = () => {
 
     try {
       // Send the form data to the backend API
-      const response = await fetch("http://localhost:5000/api/admin/contact", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

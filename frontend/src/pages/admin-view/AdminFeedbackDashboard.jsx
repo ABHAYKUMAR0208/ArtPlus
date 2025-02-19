@@ -16,7 +16,7 @@ const AdminFeedbackDashboard = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/admin/contact");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact`);
         const result = await response.json();
         if (result.success) {
           setMessages(result.data);

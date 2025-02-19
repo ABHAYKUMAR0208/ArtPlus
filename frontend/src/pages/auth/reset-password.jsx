@@ -15,7 +15,7 @@ const ResetPasswordPage = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/reset-password/reset/${id}/${token}`)
+      .get(`${import.meta.env.VITE_API_URL}/api/reset-password/reset/${id}/${token}`)
       .then(() => {
         setIsValid(true);
       })
@@ -33,7 +33,7 @@ const ResetPasswordPage = () => {
     }
 
     axios
-      .post(`http://localhost:5000/api/reset-password/reset/${id}/${token}`, { password })
+      .post(`${import.meta.env.VITE_API_URL}/api/reset-password/reset/${id}/${token}`, { password })
       .then((response) => {
         setMessage(response.data.message);
         setError("");

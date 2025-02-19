@@ -10,7 +10,7 @@ const initialState = {
   error: null, 
 };
 
-const BASE_URL = "http://localhost:5000/api/shop/order";
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/shop/order`;
 
 // Create a new order
 export const createNewOrder = createAsyncThunk(

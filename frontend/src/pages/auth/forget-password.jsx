@@ -12,7 +12,7 @@ const ForgetPassword = () => {
     setIsLoading(true); // Start loading
 
     try {
-      const url = `http://localhost:5000/api/reset-password/forget`;
+      const url = `${import.meta.env.VITE_API_URL}/api/reset-password/forget`;
       const { data } = await axios.post(url, { email });
 
       setMsg(data.message);
