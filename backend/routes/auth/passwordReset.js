@@ -18,7 +18,7 @@ router.post("/forget", async (req, res) => {
       return res.status(400).send({ message: error.details[0].message });
     }
 
-    let user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email }).lean();
     if (!user) {
       return res.status(404).send({ message: "User with given email does not exist!" });
     }
@@ -28,16 +28,29 @@ router.post("/forget", async (req, res) => {
       token = new Token({
         userId: user._id,
         token: crypto.randomBytes(32).toString("hex"),
+        expiresAt: Date.now() + 3600000, // Token valid for 1 hour
       });
       await token.save();
     }
 
-    // ✅ FIXED: Correct frontend URL
-    const url = `http://localhost:5173/reset-password/${user._id}/${token.token}`;
-    await sendEmail(user.email, "Password Reset", `Click here to reset your password. This Password is only valid for 1 hour: ${url}`);
+    // ✅ Check if CLIENT_BASE_URL is set
+    if (!process.env.CLIENT_BASE_URL) {
+      throw new Error("CLIENT_BASE_URL is not defined in environment variables.");
+    }
+
+    // ✅ Encode userId & token to prevent errors
+    const resetUrl = `${process.env.CLIENT_BASE_URL}/reset-password/${encodeURIComponent(user._id)}/${encodeURIComponent(token.token)}`;
+
+    await sendEmail(
+      user.email,
+      "Password Reset",
+      `Click here to reset your password. This link is only valid for 1 hour: ${resetUrl}`
+    );
 
     res.status(200).send({ message: "Password reset link sent to your email account" });
+
   } catch (error) {
+    console.error("Error in forget password:", error);
     res.status(500).send({ message: "Internal Server Error" });
   }
 });
@@ -45,18 +58,20 @@ router.post("/forget", async (req, res) => {
 // Verify password reset link
 router.get("/reset/:id/:token", async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).lean();
     if (!user) {
       return res.status(400).json({ message: "Invalid or expired link" });
     }
 
-    const token = await Token.findOne({ userId: user._id, token: req.params.token });
-    if (!token) {
+    const token = await Token.findOne({ userId: user._id, token: req.params.token }).lean();
+    if (!token || token.expiresAt < Date.now()) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     res.status(200).json({ isValid: true });
+
   } catch (error) {
+    console.error("Error in verifying reset token:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -81,18 +96,25 @@ router.post("/reset/:id/:token", async (req, res) => {
     if (!user) return res.status(400).send({ message: "Invalid link" });
 
     const token = await Token.findOne({ userId: user._id, token: req.params.token });
-    if (!token) return res.status(400).send({ message: "Invalid token" });
+    if (!token || token.expiresAt < Date.now()) return res.status(400).send({ message: "Invalid or expired token" });
+
+    // ✅ Ensure SALT is defined
+    const saltRounds = Number(process.env.SALT);
+    if (!saltRounds) {
+      throw new Error("SALT environment variable is not set correctly.");
+    }
 
     // Hash the new password
-    const salt = await bcrypt.genSalt(Number(process.env.SALT));
-    const hashPassword = await bcrypt.hash(req.body.password, salt);
+    const hashPassword = await bcrypt.hash(req.body.password, saltRounds);
 
     user.password = hashPassword;
     await user.save();
-    await token.deleteOne(); // ✅ Use deleteOne() instead of remove() (deprecated)
+    await token.deleteOne(); // ✅ Use deleteOne() (remove() is deprecated)
 
     res.status(200).send({ message: "Password reset successfully" });
+
   } catch (error) {
+    console.error("Error in resetting password:", error);
     res.status(500).send({ message: "Internal Server Error" });
   }
 });
