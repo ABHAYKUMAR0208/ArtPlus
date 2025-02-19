@@ -67,5 +67,3 @@ app.use("/api/common/email", emailRouter);
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
