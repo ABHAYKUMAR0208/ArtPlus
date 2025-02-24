@@ -81,6 +81,10 @@ export const logoutUser = createAsyncThunk(
      
    );
 
+  return response.data; 
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
