@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "@/store/auth-slice";
 import { useNavigate } from "react-router-dom";
+import { resetTokenAndCredentials } from "@/store/auth-slice";
 
 function AdminHeader({ setOpen }) {
 
