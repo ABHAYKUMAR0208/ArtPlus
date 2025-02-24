@@ -79,7 +79,7 @@ export const logoutUser = createAsyncThunk(
          }
         }
      
-   }
+   );
 
 const authSlice = createSlice({
   name: "auth",
