@@ -62,9 +62,9 @@ function App() {
 
  useEffect(() => {
   const token = JSON.parse(sessionStorage.getItem('token'));
-  if (token) {
+ 
     dispatch(checkAuth(token));
-  }
+
 }, [dispatch, isAuthenticated]);
 
 
