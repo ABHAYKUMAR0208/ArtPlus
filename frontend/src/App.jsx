@@ -60,13 +60,10 @@ function App() {
   const dispatch = useDispatch();
   const location = useLocation();
 
- useEffect(() => {
-  const token = JSON.parse(sessionStorage.getItem('token'));
- 
+  useEffect(() => {
+    const token = JSON.parse(sessionStorage.getItem('token'));
     dispatch(checkAuth(token));
-
-}, [dispatch, isAuthenticated]);
-
+  }, [dispatch]);
 
   if (isLoading) {
     return (
@@ -93,7 +90,6 @@ function App() {
 
       {!isAdminRoute && !isAuthRoute && <WhatsAppButton />}
 
-
       <Routes>
         <Route path="/" element={<Navigate to="/shop/home" replace />} />
 
@@ -114,7 +110,7 @@ function App() {
         <Route
           path="/admin"
           element={
-            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+            <CheckAuth isAuthenticated={isAuthenticated} user={user} isAdmin>
               <AdminLayout />
             </CheckAuth>
           }
