@@ -86,21 +86,19 @@ const authSlice = createSlice({
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
       })
-     .addCase(registerUser.fulfilled, (state) => {
-    state.isLoading = false;
-    state.user = null;
-    state.isAuthenticated = false; 
-    toast.success("Registration successful! Please login.");
-})
-
+      .addCase(registerUser.fulfilled, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.isAuthenticated = false;
+        toast.success("Registration successful! Please login.");
+      })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
         toast.error(action.payload || "Registration failed");
-      });
+      })
 
-    builder
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
       })
@@ -118,9 +116,8 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         toast.error(action.payload || "Login failed");
-      });
+      })
 
-    builder
       .addCase(checkAuth.pending, (state) => {
         state.isLoading = true;
       })
@@ -136,9 +133,8 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.token = null;
-      });
+      })
 
-    builder
       .addCase(logoutUser.fulfilled, (state) => {
         state.isLoading = false;
         state.user = null;
