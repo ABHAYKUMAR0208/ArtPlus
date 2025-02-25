@@ -30,7 +30,7 @@ const registerUser = async (req, res) => {
     await newUser.save();
     res.status(200).json({
       success: true,
-      message: "Registration Successfull"
+    
      
     });
   } catch (e) {
