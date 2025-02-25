@@ -44,7 +44,6 @@ function AuthRegister() {
       const response = await dispatch(registerUser(formData)).unwrap();
       const { success, message } = response;
       if (success) {
-        toast.success(message || "Registration successful!");
         // dispatch(setUser(null));
         navigate("/auth/login");
       } else {
