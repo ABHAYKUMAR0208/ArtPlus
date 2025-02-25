@@ -60,10 +60,13 @@ function App() {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  useEffect(() => {
-    const token = JSON.parse(sessionStorage.getItem('token'))
+ useEffect(() => {
+  const token = JSON.parse(sessionStorage.getItem('token'));
+  if (token) {
     dispatch(checkAuth(token));
-  }, [dispatch]);
+  }
+}, [dispatch, isAuthenticated]);
+
 
   if (isLoading) {
     return (
