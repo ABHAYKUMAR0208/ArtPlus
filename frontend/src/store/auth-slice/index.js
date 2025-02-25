@@ -86,12 +86,13 @@ const authSlice = createSlice({
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = true;
-        toast.success("Login now");
-      })
+     .addCase(registerUser.fulfilled, (state) => {
+    state.isLoading = false;
+    state.user = null;
+    state.isAuthenticated = false; 
+    toast.success("Registration successful! Please login.");
+})
+
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.user = null;
