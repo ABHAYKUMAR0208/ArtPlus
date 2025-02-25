@@ -45,7 +45,7 @@ function AuthRegister() {
       const { success, message } = response;
       if (success) {
         toast.success(message || "Registration successful!");
-        dispatch(setUser(null));
+        // dispatch(setUser(null));
         navigate("/auth/login");
       } else {
         toast.error(message || "Registration failed. Please try again.");
